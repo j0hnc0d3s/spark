@@ -1,5 +1,6 @@
 import names 
 import random
+from werkzeug.security import generate_password_hash
 from faker import Faker
 
 fake = Faker()
@@ -13,108 +14,160 @@ MAX_COURSES_PER_STUDENT = 6
 MIN_STUDENTS_PER_COURSE = 10
 MAX_COURSES_PER_LECTURER = 5
 
+LECTURER_BASE_ID = 2026000
+STUDENT_BASE_ID = 26000000
+
+students = []
+lecturers = []
+users_sql = []
+
+#Generate Admin 
+password = generate_password_hash(
+    "admin123",
+    method="pbkdf2:sha256:1000",  
+    salt_length=4
+    )
+
+query = f"INSERT INTO Users (user_id, password, role, first_name, last_name, gender) " \
+        f"VALUES (1, '{password}', 'admin', 'System', 'Admin', 'female');"
+
+users_sql.append(query)
 
 #Generate Student
-with open("insert_students.sql", "w") as f_student:
-    for i in range(1, NUM_STUDENTS + 1):
-        gender = random.choice(["male", "female"])
-        first_name = names.get_first_name(gender=gender)
-        last_name = names.get_last_name()
-        user_id = 26000000 + i 
-        password = f"stu_password{i}"
-        role = "student"
+for i in range(1, NUM_STUDENTS + 1):
+    user_id = STUDENT_BASE_ID + i
+    students.append(user_id)
 
-        query = f"INSERT INTO Users (user_id, password, role, first_name, last_name, gender) " \
-                f"VALUES ({user_id}, '{password}', '{role}', '{first_name}', '{last_name}', '{gender}');\n"
-        f_student.write(query)
+    gender = random.choice(["male", "female"])
+    first_name = names.get_first_name(gender=gender)
+    last_name = names.get_last_name()
+    
+    password = generate_password_hash(
+        f"stu_password{i}",
+        method="pbkdf2:sha256:1000",  
+        salt_length=4
+    )
+        
+    query = f"INSERT INTO Users (user_id, password, role, first_name, last_name, gender) " \
+            f"VALUES ({user_id}, '{password}', 'student', '{first_name}', '{last_name}', '{gender}');"
+    users_sql.append(query)
 
-print("Students SQL file generated!")
 
 #Generate Lecturers 
-with open("insert_lecturers.sql", "w") as f_lecturers:
-    for i in range(1, NUM_LECTURERS + 1):
-        gender = random.choice(["male", "female"])
-        first_name = names.get_first_name(gender=gender)
-        last_name = names.get_last_name()
-        user_id = 2026000 + i 
-        password = f"lec_password{i}"
-        role = "lecturer"
+for i in range(1, NUM_LECTURERS + 1):
+    user_id = LECTURER_BASE_ID + i
+    lecturers.append(user_id)
 
-        query = f"INSERT INTO Users (user_id, password, role, first_name, last_name, gender) " \
-                f"VALUES ({user_id}, '{password}', '{role}', '{first_name}', '{last_name}', '{gender}');\n"
-        f_lecturers.write(query)
+    gender = random.choice(["male", "female"])
+    first_name = names.get_first_name(gender=gender)
+    last_name = names.get_last_name()
+    
+    password = generate_password_hash(
+        f"lec_password{i}",
+        method="pbkdf2:sha256:1000",  
+        salt_length=4
+    )
 
-print("Lecturers SQL file generated!")
+    query = f"INSERT INTO Users (user_id, password, role, first_name, last_name, gender) " \
+            f"VALUES ({user_id}, '{password}', 'lecturer', '{first_name}', '{last_name}', '{gender}');"
+    users_sql.append(query)
+
 
 #Generate Courses 
+courses = []
+courses_sql = []
 # Track how many courses each lecturer is assigned
-lecturer_course_count = [0] * NUM_LECTURERS
-course_lecturer_ids = []
+lecturer_course_count = {i: 0 for i in lecturers}
+course_id = 1
 
-with open("insert_courses.sql", "w") as f_courses:
-    # each lecturer gets 1 course
-    for i in range(NUM_LECTURERS):
-        subject = fake.word().capitalize()
-        level = random.choice(["Introduction to", "Advanced", "Fundamentals of", "Basics of", "Principles of"])
-        course_name = f"{level} {subject}"
+# each lecturer gets 1 course
+for lecturer_id in lecturers:
+    subject = fake.word().capitalize()
+    level = random.choice(["Introduction to", "Advanced", "Fundamentals of", "Basics of", "Principles of"])
+    course_name = f"{level} {subject}"
 
-        lecturer_id = 2026001 + i
-        lecturer_course_count[i] += 1
-        course_lecturer_ids.append(lecturer_id)
+    courses.append(course_id)
 
-        query = f"INSERT INTO Course (title, lecturer_id) VALUES ('{course_name}', {lecturer_id});\n"
-        f_courses.write(query)
+    query = f"INSERT INTO Course (course_id, title, lecturer_id) VALUES ({course_id}, '{course_name}', {lecturer_id});"
+    courses_sql.append(query)
+
+    lecturer_course_count[lecturer_id] += 1
+    course_id += 1
 
     #remaining courses
-    for course_id in range(NUM_LECTURERS + 1, NUM_COURSES + 1):
-        subject = fake.word().capitalize()
-        level = random.choice(["Introduction to", "Advanced", "Fundamentals of", "Basics of", "Principles of"])
-        course_name = f"{level} {subject}"
+while course_id <= NUM_COURSES:
+    eligible = [
+        i for i in lecturers
+        if lecturer_course_count[i] < MAX_COURSES_PER_LECTURER
+    ]
 
-        assigned = False
-        while not assigned:
-            lecturer_index = random.randint(0, NUM_LECTURERS - 1)
-            if lecturer_course_count[lecturer_index] < MAX_COURSES_PER_LECTURER:
-                lecturer_course_count[lecturer_index] += 1
-                lecturer_id = 2026001 + lecturer_index
-                course_lecturer_ids.append(lecturer_id)
-                assigned = True
-        
-        query = f"INSERT INTO Course (title, lecturer_id) VALUES ('{course_name}', {lecturer_id});\n"
-        f_courses.write(query)
+    lecturer_id = random.choice(eligible)
 
-print("Courses SQL file generated!")
+    subject = fake.word().capitalize()
+    level = random.choice(["Introduction to", "Advanced", "Fundamentals of", "Basics of", "Principles of"])
+    course_name = f"{level} {subject}"    
+
+    courses.append(course_id)
+
+    query = f"INSERT INTO Course (course_id, title, lecturer_id) VALUES ({course_id}, '{course_name}', {lecturer_id});"
+    courses_sql.append(query)
+
+    lecturer_course_count[lecturer_id] += 1
+    course_id += 1
 
 #Registration 
-registrations = [set() for _ in range(NUM_COURSES)]
-student_course_count = [0] * NUM_STUDENTS  # Track courses per student
+registrations = {s: set() for s in students}
+course_students = {c: set() for c in courses}
 
-with open("insert_registrations.sql", "w") as f_reg:
-    #Assign 3-6 courses per student
-    for student_offset in range(NUM_STUDENTS):
+registration_sql = []
+available_students = set(students)
 
-        student_id = 26000001 + student_offset
-        num_courses = random.randint(MIN_COURSES_PER_STUDENT, MAX_COURSES_PER_STUDENT)
-        
-        chosen_courses = random.sample(range(1, NUM_COURSES + 1), num_courses)
+def assign(student, course):
+    if course in registrations[student]:
+        return 
 
-        for course_id in chosen_courses:
-            registrations[course_id - 1].add(student_id)
-            student_course_count[student_offset] += 1
-            query = f"INSERT INTO Registration (user_id, course_id) VALUES ({student_id}, {course_id});\n"
-            f_reg.write(query)
+    registrations[student].add(course)
+    course_students[course].add(student)
 
-    #Ensure each course has at least 10 students
-    for course_id, students in enumerate(registrations, start=1):
-        while len(students) < MIN_STUDENTS_PER_COURSE:
-            #Pick a student who has less than 6 courses
-            extra_student_offset = random.randint(0, NUM_STUDENTS - 1)
-            if student_course_count[extra_student_offset] < MAX_COURSES_PER_STUDENT:
-                extra_student_id = 26000001 + extra_student_offset
-                if extra_student_id not in students:
-                    students.add(extra_student_id)
-                    student_course_count[extra_student_offset] += 1
-                    query = f"INSERT INTO Registration (user_id, course_id) VALUES ({extra_student_id}, {course_id});\n"
-                    f_reg.write(query)
+    if len(registrations[student]) >= MAX_COURSES_PER_STUDENT:
+        available_students.discard(student)
 
-print("Registration SQL file generated!")
+course_range = {
+    student: random.randint(MIN_COURSES_PER_STUDENT, MAX_COURSES_PER_STUDENT)
+    for student in students
+}
+
+#Each student has at least 3 courses
+for student in students:
+    while len(registrations[student]) < course_range[student]:
+        course = random.choice(courses)
+        assign(student, course)
+    
+#Each course has at least 10 students
+for course in courses:
+    while len(course_students[course]) < MIN_STUDENTS_PER_COURSE:
+        student = random.choice(list(available_students))
+        assign(student, course)
+
+for student in students:
+    while len(registrations[student]) < MIN_COURSES_PER_STUDENT:
+        course = random.choice(courses)
+        assign(student, course)
+    
+for student, courses in registrations.items():
+    for course in courses:
+        registration_sql.append(
+            f"INSERT INTO Registration (user_id, course_id) "
+            f"VALUES ({student}, {course});"
+        )
+
+with open("users.sql", "w") as f:
+    f.write("\n".join(users_sql))
+
+with open("courses.sql", "w") as f:
+    f.write("\n".join(courses_sql))
+
+with open("registrations.sql", "w") as f:
+    f.write("\n".join(registration_sql))
+
+print("ALL SQL FILES GENERATED SUCCESSFULLY!")

@@ -3,8 +3,8 @@ import mysql.connector
 def get_db_connection():
     connection = mysql.connector.connect(
         host="localhost",
-        user="root",
+        user="username",
         password="password",
-        database="school_cms"
+        database="spark_cms"
     )
     return connection

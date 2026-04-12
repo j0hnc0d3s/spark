@@ -7,10 +7,9 @@ conn = get_db_connection()
 cursor = conn.cursor()
 
 sql_files = [
-    "insert_students.sql",
-    "insert_lecturers.sql",
-    "insert_courses.sql",
-    "insert_registrations.sql"
+    "users.sql",
+    "courses.sql",
+    "registrations.sql"
 ]
 
 def execute_sql_file(file_path, cursor, conn):
@@ -46,7 +45,6 @@ def execute_sql_file(file_path, cursor, conn):
 
 for sql_file in sql_files:
     execute_sql_file(sql_file, cursor, conn)
-
 
 cursor.close()
 conn.close()
