@@ -84,11 +84,11 @@ course_id = 1
 for lecturer_id in lecturers:
     subject = fake.word().capitalize()
     level = random.choice(["Introduction to", "Advanced", "Fundamentals of", "Basics of", "Principles of"])
-    course_name = f"{level} {subject}"
+    title = f"{level} {subject}"
 
     courses.append(course_id)
 
-    query = f"INSERT INTO Course (course_id, title, lecturer_id) VALUES ({course_id}, '{course_name}', {lecturer_id});"
+    query = f"INSERT INTO Course (course_id, title, lecturer_id) VALUES ({course_id}, '{title}', {lecturer_id});"
     courses_sql.append(query)
 
     lecturer_course_count[lecturer_id] += 1
@@ -105,11 +105,11 @@ while course_id <= NUM_COURSES:
 
     subject = fake.word().capitalize()
     level = random.choice(["Introduction to", "Advanced", "Fundamentals of", "Basics of", "Principles of"])
-    course_name = f"{level} {subject}"    
+    title = f"{level} {subject}"    
 
     courses.append(course_id)
 
-    query = f"INSERT INTO Course (course_id, title, lecturer_id) VALUES ({course_id}, '{course_name}', {lecturer_id});"
+    query = f"INSERT INTO Course (course_id, title, lecturer_id) VALUES ({course_id}, '{title}', {lecturer_id});"
     courses_sql.append(query)
 
     lecturer_course_count[lecturer_id] += 1

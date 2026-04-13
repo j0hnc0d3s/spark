@@ -147,6 +147,7 @@ def create_course():
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        #Lecturer
         if lecturer_id:
             cursor.execute("SELECT user_id FROM Users WHERE user_id=%s AND role='lecturer'",
                 (lecturer_id,)
@@ -154,6 +155,19 @@ def create_course():
             if not cursor.fetchone():
                 return jsonify({"error": "Invalid lecturer_id"}), 400
 
+        #check lecturer in course capacity  
+        if lecturer_id:
+            cursor.execute("""
+                SELECT COUNT(*) 
+                FROM Course 
+                WHERE lecturer_id = %s
+            """, (lecturer_id,))
+
+        count = cursor.fetchone()[0]
+        if count >= 5:
+            return jsonify({"error": "Lecturer cannot teach more than 5 courses"}), 400
+
+        #create course
         cursor.execute("SELECT MAX(course_id) FROM Course")
         result = cursor.fetchone()[0]
         course_id = 1 if result is None else result + 1
@@ -176,9 +190,228 @@ def create_course():
         return jsonify({"error": str(e)}), 500
     
 
-#d. Retrieve Courses 
-#e. Register for Courses
+#d. Retrieve Courses  [GET]
+#Retrieve all the courses 
+@app.route('/courses', methods=['GET'])
+def get_all_courses():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT course_id, title, lecturer_id FROM Course")
+        data = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        courses = []
+        for c in data:
+            courses.append({
+                "course_id": c[0],
+                "title": c[1],
+                "lecturer_id": c[2]
+            })
+
+        return jsonify(courses), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+#Retrieve courses for a particular student 
+@app.route('/courses/student/<int:student_id>', methods=['GET'])
+def get_student_courses(student_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT c.course_id, c.title, c.lecturer_id
+            FROM Course c
+            JOIN Registration r ON c.course_id = r.course_id
+            WHERE r.user_id = %s
+        """, (student_id,))
+
+        data = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        courses = []
+        for c in data:
+            courses.append({
+                "course_id": c[0],
+                "title": c[1],
+                "lecturer_id": c[2]
+            })
+        return jsonify(courses), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+#Retrieve courses taught by a particular lecturer 
+@app.route('/courses/lecturer/<int:lecturer_id>', methods=['GET'])
+def get_lecturer_courses(lecturer_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT course_id, title, lecturer_id
+            FROM Course
+            WHERE lecturer_id = %s
+        """, (lecturer_id,))
+
+        data = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        courses = []
+        for c in data:
+            courses.append({
+                "course_id": c[0],
+                "title": c[1],
+                "lecturer_id": c[2]
+            })
+        return jsonify(courses), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+#e. Register for Courses /course/register [POST]
+@app.route('/course/register', methods=['POST'])
+def register_for_course():
+    try:
+        data = request.get_json()
+
+        if not data or 'student_id' not in data or 'course_id' not in data:
+            return jsonify({"error": "Missing student_id or course_id"}), 400
+
+        student_id = data['student_id']
+        course_id = data['course_id']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        #Check if student already exists
+        cursor.execute("SELECT user_id FROM Users WHERE user_id=%s AND role='student'", (student_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Invalid student_id"}), 400
+
+        #Check if course already exists
+        cursor.execute("SELECT title FROM Course WHERE course_id=%s", (course_id,))
+        course = cursor.fetchone()
+        if not course:
+            return jsonify({"error": "Invalid course_id"}), 400
+        title = course[0]
+
+        #Check if already registered
+        cursor.execute("""
+            SELECT * FROM Registration 
+            WHERE user_id=%s AND course_id=%s
+        """, (student_id, course_id))
+        if cursor.fetchone():
+            return jsonify({"error": f"Student already registered for {title}"}), 409
+        
+        #Check if student's course amount 
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM Registration 
+            WHERE user_id = %s
+        """, (student_id,))
+
+        count = cursor.fetchone()[0]
+        if count >= 6:
+            return jsonify({"error": "Student cannot register for more than 6 courses"}), 400
+
+        #register
+        cursor.execute("""
+            INSERT INTO Registration (user_id, course_id)
+            VALUES (%s, %s)
+        """, (student_id, course_id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "message": "Student successfully registered for course",
+            "course_id": course_id,
+            "title": title,
+            "student_id": student_id
+        }), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 #f. Retrieve Members
+@app.route('/course/<int:course_id>/members', methods=['GET'])
+def get_course_members(course_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        members = []
+
+        #Course title 
+        cursor.execute("SELECT title FROM Course WHERE course_id = %s", (course_id,))
+        course = cursor.fetchone()
+        if not course:
+            return jsonify({"error": "Course not found"}), 404
+
+        title = course[0]
+
+        #Lecturer
+        cursor.execute("""
+            SELECT u.user_id, u.first_name, u.last_name
+            FROM Course c
+            JOIN Users u ON c.lecturer_id = u.user_id
+            WHERE c.course_id = %s
+        """, (course_id,))
+
+        lecturer = cursor.fetchone()
+        if lecturer:
+            members.append({
+                "user_id": lecturer[0],
+                "first_name": lecturer[1],
+                "last_name": lecturer[2],
+                "role": "lecturer"
+            })
+
+        #Students
+        cursor.execute("""
+            SELECT u.user_id, u.first_name, u.last_name
+            FROM Registration r
+            JOIN Users u ON r.user_id = u.user_id
+            WHERE r.course_id = %s
+        """, (course_id,))
+
+        students = cursor.fetchall()
+
+        for s in students:
+            members.append({
+                "user_id": s[0],
+                "first_name": s[1],
+                "last_name": s[2],
+                "role": "student"
+            })
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            "title": title,
+            "course_id": course_id,
+            "members": members
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
 #g. Retrieve Calendar Events 
 #h. Create Calendar Events 
 #i. Forums

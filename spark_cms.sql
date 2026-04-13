@@ -15,7 +15,7 @@ CREATE TABLE Users (
 CREATE TABLE Course (
     course_id INT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
-    lecturer_id INT NOT NULL,
+    lecturer_id INT NULL,
     FOREIGN KEY (lecturer_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 CREATE INDEX idx_course_lecturer ON Course(lecturer_id); -- Index improves performance when retrieving courses by lecturer
