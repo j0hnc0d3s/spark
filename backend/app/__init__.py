@@ -1,5 +1,7 @@
 """Flask application factory for Spark."""
 
+import os
+
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -18,24 +20,13 @@ def create_app():
     app.config.from_object(Config)
 
     # Open CORS for frontend dev; tighten for production.
-    
-    CORS(app, resources={
-        r"/*": {
-            "origins": [
-                "http://localhost:3000",      # React dev server
-                "http://localhost:5173",      # Vite dev server
-                "http://127.0.0.1:3000",
-                "http://127.0.0.1:5173",
-                "https://yourdomain.com",     # Your production domain
-                "https://app.yourdomain.com"  # Your app subdomain
-            ],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-            "expose_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True,      # If using cookies/auth tokens
-            "max_age": 3600
-        }
-    })
+
+    CORS(app,
+        origins=os.getenv('ALLOWED_ORIGINS', '').split(','),
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+        supports_credentials=True,
+    )
 
     # Register feature blueprints
     app.register_blueprint(auth_bp)
