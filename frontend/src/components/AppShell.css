@@ -1,0 +1,347 @@
+/* =========================================================================
+   AppShell — three-column layout: vertical rail | sidebar | main
+   ========================================================================= */
+
+.shell {
+  display: grid;
+  grid-template-columns: 56px 280px 1fr;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+/* ---------- Vertical brand rail ---------- */
+.shell-rail {
+  background: var(--ink);
+  color: var(--paper);
+  border-right: var(--rule-thick) solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.rail-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.rail-mark {
+  color: var(--spark);
+  font-size: 20px;
+  line-height: 1;
+}
+.rail-wordmark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin-top: 8px;
+  color: var(--paper);
+}
+
+.rail-vertical {
+  flex: 1;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted-soft);
+  margin-top: 32px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.rail-foot {
+  color: var(--muted-soft);
+}
+
+/* ---------- Sidebar ---------- */
+.shell-side {
+  background: var(--paper-2);
+  border-right: var(--rule-thick) solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.side-head {
+  padding: 24px 22px 18px;
+}
+.side-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.side-user-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.side-nav {
+  flex: 1;
+  padding: 10px 0;
+  overflow-y: auto;
+}
+
+.side-link {
+  display: grid;
+  grid-template-columns: 36px 1fr 16px;
+  align-items: center;
+  padding: 14px 22px;
+  border-bottom: var(--rule-thin) solid var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background 120ms var(--ease), padding-left 120ms var(--ease);
+  position: relative;
+}
+.side-link:hover {
+  background: var(--paper);
+  padding-left: 28px;
+}
+.side-link.is-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+.side-link.is-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--spark);
+}
+.side-link.is-active .side-link-num,
+.side-link.is-active .side-link-arrow {
+  color: var(--spark);
+}
+.side-link.is-active .mono-label {
+  color: var(--spark);
+}
+
+.side-link-num {
+  font-size: 11px;
+  color: var(--muted);
+}
+.side-link-label {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.side-link-arrow {
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.side-foot {
+  padding: 18px 22px;
+  border-top: var(--rule-thick) solid var(--ink);
+}
+
+/* ---------- Main content ---------- */
+.shell-main {
+  padding: 40px 56px 80px;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* =========================================================================
+   Page header — reused across all pages
+   ========================================================================= */
+.page-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 24px;
+  padding-bottom: 28px;
+  border-bottom: var(--rule-thick) solid var(--ink);
+  margin-bottom: 36px;
+}
+.page-head-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.page-head h1 {
+  font-size: clamp(2.6rem, 4.5vw, 4rem);
+  line-height: 0.95;
+}
+.page-head-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--spark);
+}
+.page-head-side {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* =========================================================================
+   Shared layout widgets used across role pages
+   ========================================================================= */
+
+/* Big metric card ("stat-block") */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0;
+  border: var(--rule-thick) solid var(--ink);
+  background: var(--paper);
+  margin-bottom: 40px;
+}
+.stat-cell {
+  padding: 22px 20px 18px;
+  border-right: var(--rule-thick) solid var(--ink);
+  position: relative;
+}
+.stat-cell:last-child { border-right: 0; }
+.stat-cell-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.stat-cell-value {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.stat-cell-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.stat-cell.accent .stat-cell-value { color: var(--spark); }
+
+/* Section heading with kicker */
+.sec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: var(--rule-thick) solid var(--ink);
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+  gap: 20px;
+}
+.sec-head h2 { font-size: 1.8rem; }
+.sec-head .mono-label { color: var(--muted); }
+
+/* Two-column block */
+.split-2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+}
+.split-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* Editorial list used for courses / assignments / etc */
+.ed-list { display: flex; flex-direction: column; }
+.ed-list-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 4px;
+  border-bottom: var(--rule-thin) solid var(--ink);
+  text-decoration: none;
+  color: var(--ink);
+  transition: padding-left 120ms var(--ease), background 120ms var(--ease);
+  border-left: none;
+}
+.ed-list-item:hover {
+  padding-left: 14px;
+  background: var(--paper-2);
+}
+.ed-list-item:first-child { border-top: var(--rule-thick) solid var(--ink); }
+.ed-list-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 36px;
+}
+.ed-list-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.ed-list-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.ed-list-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* Empty state */
+.empty {
+  padding: 60px 24px;
+  text-align: center;
+  border: var(--rule-thick) dashed var(--ink);
+  background: var(--paper);
+}
+.empty h3 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
+}
+.empty-mark {
+  font-size: 3rem;
+  color: var(--spark);
+  display: block;
+  margin-bottom: 10px;
+}
+
+/* Responsive breakpoint — collapse rail on small screens */
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+  .shell-rail { display: none; }
+  .shell-side {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: var(--rule-thick) solid var(--ink);
+  }
+  .shell-main { padding: 28px 22px 60px; }
+  .split-2, .split-3 { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-cell:nth-child(odd)  { border-right: var(--rule-thick) solid var(--ink); }
+  .stat-cell:nth-child(2n)   { border-right: 0; }
+  .stat-cell:not(:last-child) { border-bottom: var(--rule-thick) solid var(--ink); }
+}

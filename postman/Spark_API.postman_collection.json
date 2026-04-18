@@ -1,0 +1,337 @@
+{
+  "info": {
+    "name": "Spark API - COMP3161 Final Project",
+    "description": "Course Management System REST API. Group: Spark.\n\nUsage:\n1. Set the `base_url` collection variable to your deployed URL (default http://localhost:5000).\n2. Run 'Auth > Register' once, then 'Auth > Login' -- the login request saves the JWT into the `token` variable automatically.\n3. All protected endpoints use {{token}} in the Authorization header.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000" },
+    { "key": "token",    "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"ADM001\",\n  \"username\": \"admin_user\",\n  \"email\": \"admin@spark.edu\",\n  \"password\": \"admin123\",\n  \"first_name\": \"Super\",\n  \"last_name\": \"Admin\",\n  \"role\": \"admin\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (auto-saves token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.token) { pm.collectionVariables.set('token', j.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin_user\",\n  \"password\": \"admin123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Create Course (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/courses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"course_id\": \"COMP3161\",\n  \"title\": \"Introduction to Database Management\",\n  \"lecturer_id\": \"L001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List All Courses",
+          "request": { "method": "GET", "url": "{{base_url}}/courses" }
+        },
+        {
+          "name": "Courses for Student",
+          "request": { "method": "GET", "url": "{{base_url}}/students/S0000001/courses" }
+        },
+        {
+          "name": "Courses taught by Lecturer",
+          "request": { "method": "GET", "url": "{{base_url}}/lecturers/L001/courses" }
+        },
+        {
+          "name": "Assign Lecturer to Course (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/courses/COMP3161/assign-lecturer",
+            "body": { "mode": "raw", "raw": "{\n  \"lecturer_id\": \"L002\"\n}" }
+          }
+        },
+        {
+          "name": "Student Registers for Course",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/courses/COMP3161/register"
+          }
+        },
+        {
+          "name": "Course Members",
+          "request": { "method": "GET", "url": "{{base_url}}/courses/COMP3161/members" }
+        }
+      ]
+    },
+    {
+      "name": "Calendar Events",
+      "item": [
+        {
+          "name": "Create Event (lecturer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/courses/COMP3161/events",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Midterm Exam\",\n  \"event_date\": \"2026-05-01\",\n  \"description\": \"Covers weeks 1-6\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Events for Course",
+          "request": { "method": "GET", "url": "{{base_url}}/courses/COMP3161/events" }
+        },
+        {
+          "name": "Events for Student on Date",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/students/S0000001/events?date=2026-05-01"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Forums",
+      "item": [
+        {
+          "name": "List Forums for Course",
+          "request": { "method": "GET", "url": "{{base_url}}/courses/COMP3161/forums" }
+        },
+        {
+          "name": "Create Forum",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/courses/COMP3161/forums",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"General Discussion\"\n}" }
+          }
+        },
+        {
+          "name": "List Threads in Forum",
+          "request": { "method": "GET", "url": "{{base_url}}/forums/1/threads" }
+        },
+        {
+          "name": "Create Thread",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/forums/1/threads",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Help with Assignment 1\",\n  \"content\": \"Can someone explain the normalization question?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Posts in Thread",
+          "request": { "method": "GET", "url": "{{base_url}}/threads/1/posts" }
+        },
+        {
+          "name": "Reply to Thread (top-level)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/threads/1/posts",
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"Check the course outline, section 3.\"\n}" }
+          }
+        },
+        {
+          "name": "Reply to a Post (nested)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/threads/1/posts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Thanks that helped!\",\n  \"parent_post_id\": 1\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Content",
+      "item": [
+        {
+          "name": "List Sections for Course",
+          "request": { "method": "GET", "url": "{{base_url}}/courses/COMP3161/sections" }
+        },
+        {
+          "name": "Create Section (lecturer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/courses/COMP3161/sections",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Week 1: Introduction\",\n  \"display_order\": 1\n}" }
+          }
+        },
+        {
+          "name": "Add Content Item (lecturer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/sections/1/content",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content_type\": \"slide\",\n  \"title\": \"Lecture Slides\",\n  \"content\": \"https://slides.spark.edu/w1\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Content for Course",
+          "request": { "method": "GET", "url": "{{base_url}}/courses/COMP3161/content" }
+        }
+      ]
+    },
+    {
+      "name": "Assignments",
+      "item": [
+        {
+          "name": "Create Assignment (lecturer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/courses/COMP3161/assignments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Final Project\",\n  \"description\": \"Build a course management system\",\n  \"due_date\": \"2026-05-15\",\n  \"max_score\": 100\n}"
+            }
+          }
+        },
+        {
+          "name": "List Assignments",
+          "request": { "method": "GET", "url": "{{base_url}}/courses/COMP3161/assignments" }
+        },
+        {
+          "name": "Submit Assignment (student)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/assignments/1/submit",
+            "body": { "mode": "raw", "raw": "{\n  \"file_path\": \"/uploads/final_project.pdf\"\n}" }
+          }
+        },
+        {
+          "name": "List Submissions (lecturer)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/assignments/1/submissions"
+          }
+        },
+        {
+          "name": "Grade Submission (lecturer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/submissions/1/grade",
+            "body": { "mode": "raw", "raw": "{\n  \"score\": 87.5\n}" }
+          }
+        },
+        {
+          "name": "Student Overall Average",
+          "request": { "method": "GET", "url": "{{base_url}}/students/S0000001/average" }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Courses with 50+ Students",
+          "request": { "method": "GET", "url": "{{base_url}}/reports/courses/50-plus-students" }
+        },
+        {
+          "name": "Students in 5+ Courses",
+          "request": { "method": "GET", "url": "{{base_url}}/reports/students/5-plus-courses" }
+        },
+        {
+          "name": "Lecturers Teaching 3+ Courses",
+          "request": { "method": "GET", "url": "{{base_url}}/reports/lecturers/3-plus-courses" }
+        },
+        {
+          "name": "Top 10 Most Enrolled Courses",
+          "request": { "method": "GET", "url": "{{base_url}}/reports/courses/top-10-enrolled" }
+        },
+        {
+          "name": "Top 10 Students by Average",
+          "request": { "method": "GET", "url": "{{base_url}}/reports/students/top-10-averages" }
+        }
+      ]
+    }
+  ]
+}
