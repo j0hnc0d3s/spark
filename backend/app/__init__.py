@@ -25,7 +25,7 @@ def create_app():
         origins=os.getenv('ALLOWED_ORIGINS', '').split(','),
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-        supports_credentials=True,
+        supports_credentials=True
     )
 
     # Register feature blueprints
