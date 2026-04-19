@@ -45,7 +45,7 @@ spark/
 ├── postman/
 │   └── spark.postman_collection.json
 ├── docs/
-│   └── Spark_Documentation.pdf  # ERD, architecture, endpoint specs, contributions
+│   └── spark_doc.pdf  # ERD, architecture, etc.
 └── README.md
 ```
 
@@ -88,6 +88,22 @@ Default flow:
 1. **Auth > Register** (create an admin)
 2. **Auth > Login** (token saved automatically)
 3. Use any other request
+
+### 4. Frontend
+
+# 3. Frontend (new terminal)
+
+```bash
+cd frontend
+npm install
+
+cp .env.example .env                    
+# default VITE_API_URL=http://localhost:5000
+
+npm run dev                             
+# opens on :5173
+
+```
 
 ---
 
@@ -171,31 +187,15 @@ Run on a fresh database and then verify with the queries in the schema file's ve
 
 ---
 
-## Deployment — Railway
-
-1. Push this repo to GitHub.
-2. On Railway: `New Project > Deploy from GitHub > select the repo`.
-3. Add a **PostgreSQL plugin**; Railway auto-injects `DATABASE_URL`.
-4. Set the service's **Root Directory** to `backend/`.
-5. Environment variables:
-   - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (copy from the Postgres plugin)
-   - `JWT_SECRET` (generate a long random string)
-6. Railway detects the `Procfile` and runs `gunicorn wsgi:app`.
-7. After deploy, load the schema + seed from a local machine pointing `psql` at the Railway DB URL.
-
-Public URL example: `https://spark-api.up.railway.app`
-
----
-
 ## Bonus-Points Checklist
 
 - [x] **JWT Auth** — `auth.py` issues signed tokens, `auth_required` + `role_required` enforce
 - [x] **Indexes** — 16 indexes on all FK columns + common query paths
 - [x] **Query Optimization** — Views compile the 5 report queries; joins use indexed FKs
-- [x] Frontend (React/Vite) — Phase 2
-- [x] Public deployment — Phase 3
-- [x] Dockerfile — Phase 3
-- [x] CI/CD (GitHub Actions) — Phase 3
+- [x] **Frontend (React/Vite)** — Phase 2
+- [x] **Public deployment** — Phase 3
+- [x] **Dockerfile** — Phase 3
+- [x] **CI/CD (GitHub Actions)** — Phase 3
 
 ---
 
