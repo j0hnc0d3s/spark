@@ -1,11 +1,11 @@
 {
   "info": {
     "name": "Spark API - COMP3161 Final Project",
-    "description": "Course Management System REST API. Group: Spark.\n\nUsage:\n1. Set the `base_url` collection variable to your deployed URL (default http://localhost:5000).\n2. Run 'Auth > Register' once, then 'Auth > Login' -- the login request saves the JWT into the `token` variable automatically.\n3. All protected endpoints use {{token}} in the Authorization header.",
+    "description": "Course Management System REST API. Group: Spark.\n\nUsage:\n1. Set the `base_url` collection variable to your deployed URL (default https://the-spark-production.up.railway.app/).\n2. Run 'Auth > Register' once, then 'Auth > Login' -- the login request saves the JWT into the `token` variable automatically.\n3. All protected endpoints use {{token}} in the Authorization header.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:5000" },
+    { "key": "base_url", "value": "https://the-spark-production.up.railway.app/" },
     { "key": "token",    "value": "" }
   ],
   "item": [

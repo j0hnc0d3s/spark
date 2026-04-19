@@ -43,7 +43,7 @@ spark/
 │   ├── schema.sql               # DDL: tables, constraints, indexes, 5 views
 │   └── generate_seed.py         # Produces seed.sql (100K+ students, etc.)
 ├── postman/
-│   └── Spark_API.postman_collection.json
+│   └── spark.postman_collection.json
 ├── docs/
 │   └── Spark_Documentation.pdf  # ERD, architecture, endpoint specs, contributions
 └── README.md
@@ -82,7 +82,7 @@ python3 run.py
 
 ### 3. Postman
 
-Import `postman/Spark_API.postman_collection.json`. The **Login** request auto-saves the JWT into a collection variable, so subsequent protected requests work with no manual copy-paste.
+Import `postman/spark.postman_collection.json`. The **Login** request auto-saves the JWT into a collection variable, so subsequent protected requests work with no manual copy-paste.
 
 Default flow:
 1. **Auth > Register** (create an admin)
@@ -192,11 +192,10 @@ Public URL example: `https://spark-api.up.railway.app`
 - [x] **JWT Auth** — `auth.py` issues signed tokens, `auth_required` + `role_required` enforce
 - [x] **Indexes** — 16 indexes on all FK columns + common query paths
 - [x] **Query Optimization** — Views compile the 5 report queries; joins use indexed FKs
-- [ ] Frontend (React/Vite) — Phase 2
-- [ ] Public deployment — Phase 3
-- [ ] Dockerfile — Phase 3
-- [ ] CI/CD (GitHub Actions) — Phase 3
-- [ ] Redis cache — optional
+- [x] Frontend (React/Vite) — Phase 2
+- [x] Public deployment — Phase 3
+- [x] Dockerfile — Phase 3
+- [x] CI/CD (GitHub Actions) — Phase 3
 
 ---
 
