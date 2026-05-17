@@ -1,7 +1,6 @@
 """Flask application factory for Spark."""
 
 import os
-
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -19,14 +18,21 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Open CORS for frontend dev; tighten for production.
+    # Read comma-separated ALLOWED_ORIGINS from env, fall back to dev defaults
+    origins_env = os.getenv('ALLOWED_ORIGINS', '')
+    allowed_origins = [o.strip().rstrip('/') for o in origins_env.split(',') if o.strip()] \
+                      or ["http://localhost:3000", "http://localhost:5173"]
 
-    CORS(app,
-        origins=os.getenv('ALLOWED_ORIGINS', '').split(','),
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-        allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-        supports_credentials=True
-    )
+    CORS(app, resources={
+        r"/*": {
+            "origins": allowed_origins,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "expose_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True,
+            "max_age": 3600
+        }
+    })
 
     # Register feature blueprints
     app.register_blueprint(auth_bp)
@@ -39,11 +45,7 @@ def create_app():
 
     @app.route('/')
     def index():
-        return jsonify({
-            'service': 'Spark API',
-            'status':  'ok',
-            'version': '1.0'
-        })
+        return jsonify({'service': 'Spark API', 'status': 'ok', 'version': '1.0'})
 
     @app.route('/health')
     def health():
